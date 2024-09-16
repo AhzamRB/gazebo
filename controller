@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import rospy
+from geometry_msgs.msg import Twist
+import sys
+import termios
+import tty
+
+def get_key():
+    tty.setraw(sys.stdin.fileno())
+    ch = sys.stdin.read(1)
+    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, termios.tcgetattr(sys.stdin))
+    return ch
+
+if __name__ == '__main__':
+    rospy.init_node('move_commands')
+    pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+
+    rate = rospy.Rate(10)
+
+    while not rospy.is_shutdown():
+        key = get_key()
+        twist = Twist()
+
+        if key == 'w':
+            twist.linear.x = 1.0
+        elif key == 's':
+            twist.linear.x = -1.0
+        elif key == 'a':
+            twist.angular.z = 1.0
+        elif key == 'd':
+            twist.angular.z = -1.0
+        else:
+            twist.linear.x = 0.0
+            twist.angular.z = 0.0
+
+        pub.publish(twist)
+        rate.sleep()
